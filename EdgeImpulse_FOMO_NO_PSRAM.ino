@@ -39,8 +39,7 @@ int motorcycle_count = 0;
 int truck_count = 0;
 int car_count = 0;
 int bicycle_count = 0;
-unsigned long timer0;
-bool count = true;
+int count=0;
 
 void setup() {
     
@@ -111,7 +110,15 @@ void loop() {
     if(fomo.first.label){
       if(fomo.first.label != label0){
         lcd.clear();
+        count = 0;
        }
+      else{
+        count += 1;
+        Serial.println(count);
+       }
+
+      if(count == 5)count =0;
+      
       label0 = fomo.first.label;
       lcd.setCursor(2, 0);
       lcd.print(label0);
@@ -129,35 +136,8 @@ void loop() {
       lcd.setCursor(2, 0);
       lcd.print(label0);
       }
-    if(count == true){
-      count = false;
-      timer0 = millis();  
-     }
-    if(millis() - timer0 == 3000 && count == false){
-      count == true;
-      
-      if (label0 == "car") {
-        car_count += 1;
-        Serial.print("Car Count: ");
-        Serial.println(car_count);
-      } 
-      if (label0 == "truck") {
-        truck_count += 1;
-        Serial.print("Truck Count: ");
-        Serial.println(truck_count);
-      } 
-      if (label0 == "motorcycle") {
-        motorcycle_count += 1;
-        Serial.print("Motorcycle Count: ");
-        Serial.println(motorcycle_count);
-      } 
-      if (label0 == "bicycle") {
-        bicycle_count += 1;
-        Serial.print("Bicycle Count: ");
-        Serial.println(bicycle_count);
-      }
-     }
-
+    
+    
      
     // if you expect to find many objects, use fomo.forEach
     if (fomo.count() > 1) {
@@ -175,4 +155,5 @@ void loop() {
         );
       });
     }
+    delay(100);
 }
