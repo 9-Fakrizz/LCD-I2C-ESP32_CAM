@@ -30,13 +30,24 @@ using eloq::ei::fomo;
 #define COLUMNS 16
 #define ROWS    2
 
-
-// Connect via i2c, default address #0 (A0-A2 not jumpered)
-LiquidCrystal_I2C lcd(0x38, COLUMNS, ROWS);
+ LiquidCrystal_I2C lcd(0x27, COLUMNS, ROWS);
 /**
  * 
  */
+String label0;
+int motorcycle_count = 0;
+int truck_count = 0;
+int car_count = 0;
+int bicycle_count = 0;
+unsigned long timer0;
+bool count = true;
+
 void setup() {
+    
+    Wire.begin(SDA, SCL);
+    lcd.begin();  
+    lcd.clear();           
+    lcd.backlight();   
     delay(3000);
     
     Serial.begin(115200);
@@ -56,15 +67,12 @@ void setup() {
     
     Serial.println("Camera OK");
     Serial.println("Put object in front of camera");
-
-    Wire.begin(SDA, SCL);   
-    lcd.clear();           
-    lcd.backlight();   
-
 }
 
 
 void loop() {
+
+
     // capture picture
     if (!camera.capture().isOk()) {
         Serial.println(camera.exception.toString());
@@ -99,15 +107,58 @@ void loop() {
       fomo.first.height,
       fomo.first.proba
     );
-    lcd.setCursor(2, 0);
-    lcd.print(fomo.first.label);
-
+    
     if(fomo.first.label){
+      if(fomo.first.label != label0){
+        lcd.clear();
+       }
+      label0 = fomo.first.label;
+      lcd.setCursor(2, 0);
+      lcd.print(label0);
+      
       lcd.setCursor(2, 1);
       lcd.print("Proba is ");
-      lcd.print(fomo.first.proba);
+      lcd.print(int(fomo.first.proba * 100));
+      lcd.print("%");
+
+      label0 = fomo.first.label;
+
     }
-    
+    else{
+      label0 = "Finding ....";
+      lcd.setCursor(2, 0);
+      lcd.print(label0);
+      }
+    if(count == true){
+      count = false;
+      timer0 = millis();  
+     }
+    if(millis() - timer0 == 3000 && count == false){
+      count == true;
+      
+      if (label0 == "car") {
+        car_count += 1;
+        Serial.print("Car Count: ");
+        Serial.println(car_count);
+      } 
+      if (label0 == "truck") {
+        truck_count += 1;
+        Serial.print("Truck Count: ");
+        Serial.println(truck_count);
+      } 
+      if (label0 == "motorcycle") {
+        motorcycle_count += 1;
+        Serial.print("Motorcycle Count: ");
+        Serial.println(motorcycle_count);
+      } 
+      if (label0 == "bicycle") {
+        bicycle_count += 1;
+        Serial.print("Bicycle Count: ");
+        Serial.println(bicycle_count);
+      }
+     }
+
+     
     // if you expect to find many objects, use fomo.forEach
     if (fomo.count() > 1) {
       fomo.forEach([](int i, bbox_t bbox) {
