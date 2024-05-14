@@ -1,47 +1,40 @@
+// I2C Scanner
+// Written by Nick Gammon
+// Date: 20th April 2011
+
 #include <Wire.h>
-#define SDA 15
-#define SCL 14
 
-void setup()
+void setup() {
+Serial.begin (115200);
+
+// Leonardo: wait for serial port to connect
+while (!Serial)
 {
-  Wire.begin(SDA, SCL);
-  
-  Serial.begin(9600);
 }
 
-void loop()
+Serial.println ();
+Serial.println ("I2C scanner. Scanning ...");
+byte count = 0;
+
+Wire.begin();
+for (byte i = 8; i < 120; i++)
 {
-  int error;
-  int address;
-  int devices = 0;
+Wire.beginTransmission (i);
+if (Wire.endTransmission () == 0)
+{
+Serial.print ("Found address: ");
+Serial.print (i, DEC);
+Serial.print (" (0x");
+Serial.print (i, HEX);
+Serial.println (")");
+count++;
+delay (1); // maybe unneeded?
+} // end of good response
+} // end of for loop
+Serial.println ("Done.");
+Serial.print ("Found ");
+Serial.print (count, DEC);
+Serial.println (" device(s).");
+} // end of setup
 
-  Serial.println("Devices found:");
-
-  for(address = 1; address < 127; address++ ) 
-  {
-    Wire.beginTransmission(address);
-    error = Wire.endTransmission();
-
-    if (error == 0)
-    {
-      Serial.print("0x");
-      if (address<16) 
-        Serial.print("0");
-      Serial.println(address,HEX);
-      devices++;
-    }
-    
-    else if (error==4) 
-    {
-      Serial.print("Unknown error at address 0x");
-      if (address<16) 
-        Serial.print("0");
-      Serial.println(address,HEX);
-    }    
-  }
-  
-  if (devices == 0)
-    Serial.println("No I2C devices found");
-
-  delay(5000);           
-}
+void loop() {}
